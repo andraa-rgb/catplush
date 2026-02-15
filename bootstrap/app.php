@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // tambahan untuk role
             'role' => \App\Http\Middleware\RoleMiddleware::class,
         ]);
+
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
