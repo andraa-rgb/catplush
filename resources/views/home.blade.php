@@ -28,7 +28,8 @@
             </p>
 
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('login') }}" class="btn-primary">
+                <!-- Ganti route() dengan link ke API atau halaman statis -->
+                <a href="/login" class="btn-primary">
                     🔐 Login Dosen
                 </a>
             </div>
@@ -39,7 +40,9 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="card-modern text-center hover-lift">
                     <div class="text-4xl mb-3">👨‍🏫</div>
-                    <h3 class="text-2xl font-bold text-purple-700 mb-2">{{ $dosens->count() }} Dosen</h3>
+                    <h3 class="text-2xl font-bold text-purple-700 mb-2">
+                        {{ $dosens->count() ?? 0 }} Dosen
+                    </h3>
                     <p class="text-gray-600">Profesional Lab WICIDA</p>
                 </div>
 
@@ -72,13 +75,6 @@
                 <div class="card-modern group cursor-pointer hover-lift overflow-hidden">
                     <!-- Status Header -->
                     <div class="relative h-32 bg-gradient-to-br from-purple-400 to-purple-600 rounded-xl mb-6 flex items-center justify-center overflow-hidden group-hover:scale-110 transition-transform duration-300">
-                        <!-- Animated Background -->
-                        <div class="absolute inset-0 opacity-20">
-                            <div class="absolute top-2 right-2 w-20 h-20 bg-white rounded-full animate-pulse"></div>
-                            <div class="absolute bottom-2 left-2 w-24 h-24 bg-white rounded-full animate-pulse" style="animation-delay: 0.3s;"></div>
-                        </div>
-
-                        <!-- Status Badge -->
                         <div class="relative text-center">
                             @php
                                 $status = $dosen->status?->status ?? 'Tidak Diketahui';
@@ -87,12 +83,6 @@
                                     'Mengajar' => '🔴',
                                     'Konsultasi' => '🟡',
                                     default => '⚪'
-                                };
-                                $statusClass = match($status) {
-                                    'Ada' => 'status-ada',
-                                    'Mengajar' => 'status-mengajar',
-                                    'Konsultasi' => 'status-konsultasi',
-                                    default => 'status-tidak-ada'
                                 };
                             @endphp
                             <span class="text-5xl mb-2 inline-block">{{ $statusIcon }}</span>
@@ -116,20 +106,14 @@
 
                     <!-- Action Buttons -->
                     <div class="space-y-3 pt-4 border-t border-purple-100">
-                        <a href="{{ route('dosen.show', $dosen->id) }}" 
-                            class="block w-full text-center py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 active:scale-95">
+                        <a href="/dosen/{{ $dosen->id }}" 
+                           class="block w-full text-center py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-bold rounded-lg hover:shadow-lg transition-all duration-300 active:scale-95">
                             📅 Lihat Jadwal
                         </a>
-                        <a href="{{ route('dosen.show', $dosen->id) }}#booking" 
-                            class="block w-full text-center py-3 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all duration-300">
+                        <a href="/dosen/{{ $dosen->id }}#booking" 
+                           class="block w-full text-center py-3 bg-purple-100 text-purple-700 font-bold rounded-lg hover:bg-purple-200 transition-all duration-300">
                             💬 Booking Konsultasi
                         </a>
-                    </div>
-
-                    <!-- QR Code -->
-                    <div class="mt-6 p-4 bg-gradient-light rounded-lg text-center border border-purple-200 group-hover:border-purple-400 transition-all">
-                        <p class="text-xs text-purple-600 font-semibold">📱 Scan untuk akses cepat</p>
-                        <p class="text-2xl mt-2">📲</p>
                     </div>
                 </div>
             @empty
@@ -137,68 +121,6 @@
                     <p class="text-xl text-gray-600">Belum ada data dosen tersedia</p>
                 </div>
             @endforelse
-        </div>
-    </div>
-
-    <!-- Features Section -->
-    <div class="max-w-6xl mx-auto px-4 mb-20">
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-12 text-center">
-            ✨ Fitur Utama
-        </h2>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="card-gradient hover-lift">
-                <div class="text-4xl mb-4">🟢🔴🟡⚪</div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Status Real-Time</h3>
-                <p class="text-gray-600">
-                    Lihat status dosen secara real-time: Ada, Mengajar, Konsultasi, atau Tidak Ada. 
-                    Teknologi IoT untuk transparansi penuh.
-                </p>
-            </div>
-
-            <div class="card-gradient hover-lift">
-                <div class="text-4xl mb-4">📱</div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">QR Code Akses</h3>
-                <p class="text-gray-600">
-                    Scan QR code di luar ruangan dosen untuk akses cepat ke jadwal dan booking konsultasi 
-                    tanpa perlu mencari.
-                </p>
-            </div>
-
-            <div class="card-gradient hover-lift">
-                <div class="text-4xl mb-4">📅</div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Jadwal Mingguan</h3>
-                <p class="text-gray-600">
-                    Lihat jadwal lengkap dosen per hari: jadwal mengajar, konsultasi, rapat, dan 
-                    slot kosong untuk booking.
-                </p>
-            </div>
-
-            <div class="card-gradient hover-lift">
-                <div class="text-4xl mb-4">💬</div>
-                <h3 class="text-xl font-bold text-gray-900 mb-3">Booking Mudah</h3>
-                <p class="text-gray-600">
-                    Booking konsultasi dengan dosen hanya perlu isi nama, email, tanggal, jam, dan keperluan. 
-                    Dosen akan approve/reject.
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- CTA Section -->
-    <div class="max-w-4xl mx-auto px-4 mb-20">
-        <div class="bg-gradient-to-r from-purple-600 to-purple-700 rounded-3xl shadow-2xl p-12 text-center text-white">
-            <h2 class="text-3xl md:text-4xl font-bold mb-4">
-                Siap Mulai?
-            </h2>
-            <p class="text-lg mb-8 text-purple-100">
-                Jelajahi jadwal dosen kami dan buat booking konsultasi Anda sekarang
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('login') }}" class="px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-purple-50 transition-all duration-300">
-                    🔐 Login Dosen
-                </a>
-            </div>
         </div>
     </div>
 </x-app-layout>
