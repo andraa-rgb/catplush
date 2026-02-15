@@ -14,6 +14,9 @@ export default {
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
             },
+            boxShadow: {
+                'glow': '0 0 15px 5px rgba(147, 51, 234, 0.5)',
+            }
         },
     },
 

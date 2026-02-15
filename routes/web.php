@@ -1,75 +1,56 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ExamController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\AdminExamController;
-use App\Http\Controllers\SuperAdminController; // (Opsional: Jika nanti buat controller user)
+use App\Http\Controllers\JadwalController;
+use App\Http\Controllers\AdminController;
+use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// ===== PUBLIC ROUTES =====
+Route::get('/', [JadwalController::class, 'home'])->name('home');
+Route::get('/dosen/{id}', [JadwalController::class, 'show'])->name('dosen.show');
+Route::post('/dosen/{id}/booking', [JadwalController::class, 'storeBooking'])->name('booking.store');
+Route::get('/api/jadwal/{dosenId}', [JadwalController::class, 'getJadwalByDay'])->name('jadwal.getByDay');
+Route::get('/api/status/{dosenId}', [JadwalController::class, 'getStatus'])->name('status.get');
 
-/// ... Routes Profile ...
+// ===== AUTH REQUIRED ROUTES =====
+Route::middleware('auth')->group(function () {
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-// ----------------------------------------------------------------------
-// 1. FITUR MENGERJAKAN UJIAN (BISA UNTUK SEMUA ROLE)
-// ----------------------------------------------------------------------
-// Pindahkan route ini KELUAR dari middleware role:student
-// Taruh di dalam group middleware(['auth', 'verified']) biasa
+    // ===== ADMIN ROUTES =====
+    Route::prefix('/admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
+        Route::get('/dosen/create', [AdminController::class, 'createDosen'])->name('dosen.create');
+        Route::post('/dosen', [AdminController::class, 'storeDosen'])->name('dosen.store');
+        Route::get('/dosen/{id}/edit', [AdminController::class, 'editDosen'])->name('dosen.edit');
+        Route::put('/dosen/{id}', [AdminController::class, 'updateDosen'])->name('dosen.update');
+        Route::delete('/dosen/{id}', [AdminController::class, 'deleteDosen'])->name('dosen.delete');
+    });
 
-Route::get('/dashboard', [ExamController::class, 'dashboard'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
+    // Dosen Dashboard
+    Route::get('/dashboard', [JadwalController::class, 'dashboard'])->name('dashboard');
 
-// Route Ujian (Start, Show, Finish, Result)
-// Sekarang Admin/Super Admin juga bisa akses URL ini tanpa error 403
-Route::post('/exams/{id}/start', [ExamController::class, 'startExam'])->name('exams.start');
-Route::get('/exams/session/{session}', [ExamController::class, 'showQuestion'])->name('exams.show');
-Route::post('/exams/answer', [ExamController::class, 'storeAnswer'])->name('exams.store_answer');
-Route::post('/exams/finish/{session}', [ExamController::class, 'finishExam'])->name('exams.finish');
-Route::get('/exams/result/{session}', [ExamController::class, 'result'])->name('exams.result');
-Route::get('/history', [ExamController::class, 'history'])->name('exams.history');
+    // Jadwal Management
+    Route::prefix('/jadwal')->name('dosen.jadwal.')->group(function () {
+        Route::get('/', [JadwalController::class, 'indexJadwal'])->name('index');
+        Route::get('/create', [JadwalController::class, 'createJadwal'])->name('create');
+        Route::post('/', [JadwalController::class, 'storeJadwal'])->name('store');
+        Route::get('/{id}/edit', [JadwalController::class, 'editJadwal'])->name('edit');
+        Route::put('/{id}', [JadwalController::class, 'updateJadwal'])->name('update');
+        Route::delete('/{id}', [JadwalController::class, 'destroyJadwal'])->name('destroy');
+    });
 
-// ----------------------------------------------------------------------
-// 2. AREA ADMIN OPERASIONAL (Admin Ujian & Super Admin)
-// ----------------------------------------------------------------------
-// Role 'admin' DAN 'super_admin' boleh akses ini (Manajemen Soal)
-Route::middleware(['auth', 'verified', 'role:super_admin,admin'])->prefix('admin')->group(function () {
-    
-    // Dashboard Admin
-    Route::get('/exams', [AdminExamController::class, 'index'])->name('admin.exams.index');
-    
-    // Manajemen Ujian
-    Route::get('/exams/create', [AdminExamController::class, 'create'])->name('admin.exams.create');
-    Route::post('/exams', [AdminExamController::class, 'store'])->name('admin.exams.store');
-    Route::get('/exams/{id}', [AdminExamController::class, 'show'])->name('admin.exams.show');
-    Route::delete('/exams/{id}', [AdminExamController::class, 'destroy'])->name('admin.exams.destroy');
-    
-    // Manajemen Soal
-    Route::post('/exams/{id}/questions', [AdminExamController::class, 'storeQuestion'])->name('admin.exams.questions.store');
-    Route::delete('/questions/{id}', [AdminExamController::class, 'destroyQuestion'])->name('admin.exams.questions.destroy');
-    Route::get('/questions/{id}/edit', [AdminExamController::class, 'editQuestion'])->name('admin.questions.edit');
-    Route::put('/questions/{id}', [AdminExamController::class, 'updateQuestion'])->name('admin.questions.update');
+    // Booking Management
+    Route::prefix('/booking')->name('dosen.booking.')->group(function () {
+        Route::get('/', [JadwalController::class, 'indexBooking'])->name('index');
+        Route::post('/{id}/approve', [JadwalController::class, 'approveBooking'])->name('approve');
+        Route::post('/{id}/reject', [JadwalController::class, 'rejectBooking'])->name('reject');
+    });
 
-    // Fitur Tambahan (Reset, Import, AI)
-    Route::delete('/sessions/{id}/reset', [AdminExamController::class, 'resetSession'])->name('admin.sessions.reset');
-    Route::post('/exams/{id}/import', [AdminExamController::class, 'importQuestions'])->name('admin.exams.import');
-    Route::post('/exams/{id}/generate', [AdminExamController::class, 'generateQuestions'])->name('admin.exams.generate');
-    // TAMBAHKAN INI: Route Edit & Update Ujian
-    Route::get('/exams/{id}/edit', [AdminExamController::class, 'edit'])->name('admin.exams.edit');
-    Route::put('/exams/{id}', [AdminExamController::class, 'update'])->name('admin.exams.update');
-
-});
-
-// ----------------------------------------------------------------------
-// 3. AREA KHUSUS SUPER ADMIN
-// ----------------------------------------------------------------------
-// Hanya 'super_admin' yang boleh masuk. (Misal: Manajemen User Admin Lain)
-Route::middleware(['auth', 'verified', 'role:super_admin'])->prefix('super')->name('super.')->group(function() {
-    
-    // Resource route otomatis membuat url index, create, store, edit, update, destroy
-    Route::resource('users', SuperAdminController::class);
+    // Status Update
+    Route::post('/api/status/update', [JadwalController::class, 'updateStatus'])->name('status.update');
 });
 
 require __DIR__.'/auth.php';

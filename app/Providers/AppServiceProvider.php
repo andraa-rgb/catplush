@@ -3,7 +3,6 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL; // <--- JANGAN LUPA TAMBAHKAN INI
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,13 +19,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Tambahkan logika ini:
-        if($this->app->environment('production')) {
-            URL::forceScheme('https');
-
-             // TAMBAHAN: Fix Error Excel Read-only
-        // Paksa library Excel menggunakan folder /tmp di server Vercel
-        config(['excel.temporary_files.local_path' => '/tmp']);
-        }
+        //
     }
 }
